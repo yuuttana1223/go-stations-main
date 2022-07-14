@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/TechBowl-japan/go-stations/model"
@@ -22,5 +23,8 @@ func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Message: "OK",
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "%s", res.Message)
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
+	}
 }
