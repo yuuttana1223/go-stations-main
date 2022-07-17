@@ -35,14 +35,17 @@ func (s *TODOService) CreateTODO(ctx context.Context, subject, description strin
 		return nil, err
 	}
 
-	var todo *model.TODO
-	err = s.db.QueryRowContext(ctx, confirm, id).Scan(todo.Subject, todo.Description, todo.CreatedAt, todo.UpdatedAt)
+	todo := model.TODO{
+		ID: id,
+	}
+
+	err = s.db.QueryRowContext(ctx, confirm, id).Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return todo, nil
+	return &todo, nil
 }
 
 // ReadTODO reads TODOs on DB.
