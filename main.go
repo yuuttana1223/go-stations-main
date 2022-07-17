@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/TechBowl-japan/go-stations/db"
-	"github.com/TechBowl-japan/go-stations/handler"
 	"github.com/TechBowl-japan/go-stations/handler/router"
 )
 
@@ -53,7 +52,6 @@ func realMain() error {
 	mux := router.NewRouter(todoDB)
 
 	// TODO: ここから実装を行う
-	mux.HandleFunc("/healthz", handler.NewHealthzHandler().ServeHTTP)
 	log.Fatal(http.ListenAndServe(port, mux))
 	return nil
 }
