@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/TechBowl-japan/go-stations/model"
@@ -38,8 +39,17 @@ func (h *TODOHandler) Read(ctx context.Context, req *model.ReadTODORequest) (*mo
 
 // Update handles the endpoint that updates the TODO.
 func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) (*model.UpdateTODOResponse, error) {
-	_, _ = h.svc.UpdateTODO(ctx, 0, "", "")
-	return &model.UpdateTODOResponse{}, nil
+	if req.ID == 0 {
+		return nil, fmt.Errorf("ID is required")
+	}
+	if req.Subject == "" {
+		return nil, fmt.Errorf("Subject is required")
+	}
+	todo, err := h.svc.UpdateTODO(ctx, 0, req.Subject, req.Description)
+	if err != nil {
+		return nil, err
+	}
+	return &model.UpdateTODOResponse{TODO: *todo}, nil
 }
 
 // Delete handles the endpoint that deletes the TODOs.
@@ -68,7 +78,22 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-	case http.MethodGet:
+	case http.MethodPut:
+		var todoReq model.UpdateTODORequest
+		fmt.Println("req:", todoReq)
+		if err := json.NewDecoder(r.Body).Decode(&todoReq); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		resp, err := h.Update(r.Context(), &todoReq)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if err = json.NewEncoder(w).Encode(resp); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 }
