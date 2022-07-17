@@ -45,7 +45,7 @@ func (h *TODOHandler) Update(ctx context.Context, req *model.UpdateTODORequest) 
 	if req.Subject == "" {
 		return nil, fmt.Errorf("Subject is required")
 	}
-	todo, err := h.svc.UpdateTODO(ctx, 0, req.Subject, req.Description)
+	todo, err := h.svc.UpdateTODO(ctx, req.ID, req.Subject, req.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -77,16 +77,19 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	case http.MethodPut:
 		var todoReq model.UpdateTODORequest
-		fmt.Println("req:", todoReq)
 		if err := json.NewDecoder(r.Body).Decode(&todoReq); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		resp, err := h.Update(r.Context(), &todoReq)
 		if err != nil {
+			switch err.(type) {
+			case *model.ErrNotFound:
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -96,4 +99,5 @@ func (h *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 }

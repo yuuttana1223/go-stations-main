@@ -20,7 +20,6 @@ func NewHealthzHandler() *HealthzHandler {
 // ServeHTTP implements http.Handler interface.
 func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	resp := &model.HealthzResponse{
 		Message: "OK",
 	}
@@ -28,4 +27,5 @@ func (h *HealthzHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 	}
+	w.WriteHeader(http.StatusOK)
 }

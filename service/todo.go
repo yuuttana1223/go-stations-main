@@ -76,12 +76,8 @@ func (s *TODOService) UpdateTODO(ctx context.Context, id int64, subject, descrip
 	if rows == 0 {
 		return nil, &model.ErrNotFound{Message: fmt.Sprintf("TODO %d not found", id)}
 	}
-	todoId, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
 	todo := model.TODO{
-		ID: todoId,
+		ID: id,
 	}
 	err = s.db.QueryRowContext(ctx, confirm, id).Scan(&todo.Subject, &todo.Description, &todo.CreatedAt, &todo.UpdatedAt)
 	if err != nil {
